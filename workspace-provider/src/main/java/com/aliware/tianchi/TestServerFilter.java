@@ -21,6 +21,7 @@ public class TestServerFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try{
             Result result = invoker.invoke(invocation);
+
             return result;
         }catch (Exception e){
             throw e;
@@ -30,6 +31,9 @@ public class TestServerFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+//        if(result.hasException()){
+//            System.out.println(result.getException().getMessage());
+//        }
         return result;
     }
 
