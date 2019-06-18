@@ -31,10 +31,10 @@ public class UserLoadBalance implements LoadBalance {
                 weight = 200;
                 break;
             case "provider-medium":
-                weight = 300;
+                weight = 450;
                 break;
             case "provider-large":
-                weight = 500;
+                weight = 600;
                 break;
         }
         return weight;
