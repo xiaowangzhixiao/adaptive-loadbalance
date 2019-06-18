@@ -34,6 +34,9 @@ public class TestClientFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        if(result.hasException()){
+            System.out.println("onResponse :"+result.getException().getMessage());
+        }
         return result;
     }
 }

@@ -324,3 +324,9 @@ tags
 [._]*.un~
 .flattened-pom.xml
 
+# vscode
+.vscode
+
+.classpath
+
+.project

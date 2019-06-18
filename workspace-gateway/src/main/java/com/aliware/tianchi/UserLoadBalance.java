@@ -1,5 +1,6 @@
 package com.aliware.tianchi;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -7,6 +8,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -19,18 +21,20 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
+    private static ConcurrentHashMap<String ,Integer> weight = new ConcurrentHashMap<>();
+
     private int getWeight(Invoker<?> invoker, Invocation invocation) {
         // 获得 weight 配置，即服务权重。默认为 100
         int weight = 100;
         switch (invoker.getUrl().getHost()){
             case "provider-small":
-                weight = 100;
-                break;
-            case "provider-medium":
                 weight = 200;
                 break;
-            case "provider-large":
+            case "provider-medium":
                 weight = 300;
+                break;
+            case "provider-large":
+                weight = 500;
                 break;
         }
         return weight;
@@ -44,6 +48,7 @@ public class UserLoadBalance implements LoadBalance {
         if (invokers.size() == 1) {
             return invokers.get(0);
         }
+
         return doSelect(invokers, url, invocation);
     }
 
@@ -59,37 +64,28 @@ public class UserLoadBalance implements LoadBalance {
         weights[0] = firstWeight;
         // The sum of weights
         int totalWeight = firstWeight;
-        int maxIndex = 0;
         for (int i = 1; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
-            if (firstWeight < weight){
-                firstWeight = weight;
-                maxIndex = i;
-            }
             // save for later use
             weights[i] = weight;
-//            // Sum
-//            totalWeight += weight;
-//            if (sameWeight && weight != firstWeight) {
-//                sameWeight = false;
-//            }
+            // Sum
+            totalWeight += weight;
+            if (sameWeight && weight != firstWeight) {
+                sameWeight = false;
+            }
         }
-
-//        if (totalWeight > 0 && !sameWeight) {
-//            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-//            int offset = ThreadLocalRandom.current().nextInt(totalWeight);
-//            // Return a invoker based on the random value.
-//            for (int i = 0; i < length; i++) {
-//                offset -= weights[i];
-//                if (offset < 0) {
-//                    count[i] += 1;
-//                    return invokers.get(i);
-//                }
-//            }
-//        }
-//        // If all invokers have the same weight value or totalWeight=0, return evenly.
-//        int i = ThreadLocalRandom.current().nextInt(length);
-//        count[i] += 1;
-        return invokers.get(maxIndex);
+        if (totalWeight > 0 && !sameWeight) {
+            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
+            int offset = ThreadLocalRandom.current().nextInt(totalWeight);
+            // Return a invoker based on the random value.
+            for (int i = 0; i < length; i++) {
+                offset -= weights[i];
+                if (offset < 0) {
+                    return invokers.get(i);
+                }
+            }
+        }
+        // If all invokers have the same weight value or totalWeight=0, return evenly.
+        return invokers.get(ThreadLocalRandom.current().nextInt(length));
     }
 }
