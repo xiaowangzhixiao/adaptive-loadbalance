@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    private static final int initWeight = 2;
+    private static final int initWeight = 1;
     public static Map<String, Integer> index;
     public static AtomicIntegerArray weight;
     public static AtomicIntegerArray concurrentNum;

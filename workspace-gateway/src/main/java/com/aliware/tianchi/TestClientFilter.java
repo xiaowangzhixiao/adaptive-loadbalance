@@ -38,7 +38,7 @@ public class TestClientFilter implements Filter {
             System.out.println("onResponse :" + result.getException().getMessage());
             for (int i = 0; i < UserLoadBalance.weight.length(); i++) {
                 if (i != index) {
-                    UserLoadBalance.weight.getAndIncrement(i);
+                    UserLoadBalance.weight.getAndAdd(i,2);
                 }
             }
         }
