@@ -56,14 +56,12 @@ public class TestClientFilter implements Filter {
                 synchronized (UserLoadBalance.second) {
                     UserLoadBalance.second=false;
                     for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
-                        UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
+                        UserLoadBalance.weight.set(j, UserLoadBalance.concurrentMaxNum.get(j));
                     }
                 }
                 
             }
             
-            
-
             System.out.println(UserLoadBalance.weight.toString());
         }
         
