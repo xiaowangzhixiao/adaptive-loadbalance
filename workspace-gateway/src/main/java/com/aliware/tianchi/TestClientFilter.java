@@ -38,30 +38,31 @@ public class TestClientFilter implements Filter {
             System.out.println("onResponse :" + result.getException().getMessage());
 
             UserLoadBalance.concurrentMaxNum.set(index, UserLoadBalance.concurrentNum.get(index));
-
-            int i;
-            for (i = 0; i < UserLoadBalance.concurrentMaxNum.length(); i++) {
+            if (UserLoadBalance.second) {
+                UserLoadBalance.weight.set(index, 0); 
+            } else {
+                UserLoadBalance.weight.set(index, UserLoadBalance.concurrentNum.get(index) - 5); 
+            }
+            
+            boolean flag = false;
+            for (int i = 0; i < UserLoadBalance.concurrentMaxNum.length(); i++) {
                 if (UserLoadBalance.concurrentMaxNum.get(i) == 0) {
-                    break;
+                    UserLoadBalance.weight.set(i, 1);
+                    flag = true;
                 }
             }
 
-            if (i == UserLoadBalance.concurrentMaxNum.length() && UserLoadBalance.second.get()) {
+            if (!flag && UserLoadBalance.second) {
                 synchronized (UserLoadBalance.second) {
-                    if (UserLoadBalance.second.compareAndSet(true, false)) {
-                        for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
-                            UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
-                        }
+                    UserLoadBalance.second=false;
+                    for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
+                        UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
                     }
                 }
                 
             }
             
-            if (UserLoadBalance.second.get()) {
-                UserLoadBalance.weight.set(index, 0); 
-            } else {
-                UserLoadBalance.weight.set(index, UserLoadBalance.concurrentNum.get(index) - 5); 
-            }
+            
 
             System.out.println(UserLoadBalance.weight.toString());
         }

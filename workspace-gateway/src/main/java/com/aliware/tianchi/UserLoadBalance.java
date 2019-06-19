@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
@@ -28,8 +27,8 @@ public class UserLoadBalance implements LoadBalance {
     public static AtomicIntegerArray weight;
     public static AtomicIntegerArray concurrentNum;
     public static AtomicIntegerArray concurrentMaxNum; 
-    private static AtomicBoolean first = new AtomicBoolean(true);
-    public static AtomicBoolean second = new AtomicBoolean(true);
+    private static Boolean first = true;
+    public static Boolean second = true;
 
     private static <T> void init(List<Invoker<T>> invokers) {
         index = new HashMap<>();
@@ -46,13 +45,11 @@ public class UserLoadBalance implements LoadBalance {
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         // 初始化统计
-        if (first.get()) {
+        if (first) {
             synchronized (first) {
-                if (first.compareAndSet(true, false)) {
-                    init(invokers);
-                }
+                first = false;
+                init(invokers);
             }
-        
         }
         
         if (invokers == null || invokers.isEmpty()) {
