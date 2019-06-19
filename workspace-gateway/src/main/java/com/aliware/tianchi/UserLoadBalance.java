@@ -29,6 +29,7 @@ public class UserLoadBalance implements LoadBalance {
     public static AtomicIntegerArray concurrentNum;
     public static AtomicIntegerArray concurrentMaxNum; 
     private static AtomicBoolean first = new AtomicBoolean(true);
+    public static AtomicBoolean second = new AtomicBoolean(true);
 
     private static <T> void init(List<Invoker<T>> invokers) {
         index = new HashMap<>();
@@ -38,7 +39,7 @@ public class UserLoadBalance implements LoadBalance {
             index.put(invokers.get(i).getUrl().getHost(), i);
             weight.set(i, initWeight);
             concurrentNum.set(i, 0);
-            concurrentMaxNum.set(i, Integer.MAX_VALUE);
+            concurrentMaxNum.set(i, 0);
         }
     }
 

@@ -36,12 +36,30 @@ public class TestClientFilter implements Filter {
         UserLoadBalance.concurrentNum.getAndDecrement(index);
         if (result.hasException()) {
             System.out.println("onResponse :" + result.getException().getMessage());
-            for (int i = 0; i < UserLoadBalance.weight.length(); i++) {
-                // if (i != index) {
-                //     UserLoadBalance.weight.getAndAdd(i, 2);
-                // }
-                UserLoadBalance.weight.set(i, UserLoadBalance.concurrentNum.get(i));
+
+            UserLoadBalance.concurrentMaxNum.set(index, UserLoadBalance.concurrentNum.get(index));
+
+            int i;
+            for (i = 0; i < UserLoadBalance.concurrentMaxNum.length(); i++) {
+                if (UserLoadBalance.concurrentMaxNum.get(i) == 0) {
+                    break;
+                }
             }
+
+            if (i == UserLoadBalance.concurrentMaxNum.length() && UserLoadBalance.second.get()) {
+                if (UserLoadBalance.second.compareAndSet(true, false)) {
+                    for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
+                        UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
+                    }
+                }
+            }
+            
+            if (UserLoadBalance.second.get()) {
+                UserLoadBalance.weight.set(index, 0); 
+            } else {
+                UserLoadBalance.weight.set(index, UserLoadBalance.concurrentNum.get(index) - 5); 
+            }
+
             System.out.println(UserLoadBalance.weight.toString());
         }
         
