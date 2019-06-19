@@ -46,9 +46,15 @@ public class UserLoadBalance implements LoadBalance {
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         // 初始化统计
-        if (first.compareAndSet(true, false)) {
-            init(invokers);
+        if (first.get()) {
+            synchronized (first) {
+                if (first.compareAndSet(true, false)) {
+                    init(invokers);
+                }
+            }
+        
         }
+        
         if (invokers == null || invokers.isEmpty()) {
             return null;
         }

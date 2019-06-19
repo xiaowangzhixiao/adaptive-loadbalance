@@ -47,11 +47,14 @@ public class TestClientFilter implements Filter {
             }
 
             if (i == UserLoadBalance.concurrentMaxNum.length() && UserLoadBalance.second.get()) {
-                if (UserLoadBalance.second.compareAndSet(true, false)) {
-                    for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
-                        UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
+                synchronized (UserLoadBalance.second) {
+                    if (UserLoadBalance.second.compareAndSet(true, false)) {
+                        for (int j = 0; j < UserLoadBalance.weight.length(); j++) {
+                            UserLoadBalance.weight.set(j, UserLoadBalance.concurrentNum.get(j));
+                        }
                     }
                 }
+                
             }
             
             if (UserLoadBalance.second.get()) {
