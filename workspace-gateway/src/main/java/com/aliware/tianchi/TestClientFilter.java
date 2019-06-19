@@ -20,11 +20,9 @@ public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try{
-
+            int index = UserLoadBalance.index.get(invoker.getUrl().getHost());
+            UserLoadBalance.concurrentNum.getAndIncrement(index);
             Result result = invoker.invoke(invocation);
-            if(result.hasException()){
-                System.out.println(result.getException().getMessage());
-            }
             return result;
         }catch (Exception e){
             throw e;
@@ -34,9 +32,17 @@ public class TestClientFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if(result.hasException()){
-            System.out.println("onResponse :"+result.getException().getMessage());
+        int index = UserLoadBalance.index.get(invoker.getUrl().getHost());
+        UserLoadBalance.concurrentNum.getAndDecrement(index);
+        if (result.hasException()) {
+            System.out.println("onResponse :" + result.getException().getMessage());
+            for (int i = 0; i < UserLoadBalance.weight.length(); i++) {
+                if (i != index) {
+                    UserLoadBalance.weight.getAndIncrement(i);
+                }
+            }
         }
+        
         return result;
     }
 }

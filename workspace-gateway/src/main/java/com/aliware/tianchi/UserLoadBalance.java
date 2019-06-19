@@ -1,15 +1,17 @@
 package com.aliware.tianchi;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * @author daofeng.xjf
@@ -21,27 +23,31 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    private static ConcurrentHashMap<String ,Integer> weight = new ConcurrentHashMap<>();
+    private static final int initWeight = 2;
+    public static Map<String, Integer> index;
+    public static AtomicIntegerArray weight;
+    public static AtomicIntegerArray concurrentNum;
+    public static AtomicIntegerArray concurrentMaxNum; 
+    private static AtomicBoolean first = new AtomicBoolean(true);
 
-    private int getWeight(Invoker<?> invoker, Invocation invocation) {
-        // 获得 weight 配置，即服务权重。默认为 100
-        int weight = 100;
-        switch (invoker.getUrl().getHost()){
-            case "provider-small":
-                weight = 200;
-                break;
-            case "provider-medium":
-                weight = 450;
-                break;
-            case "provider-large":
-                weight = 600;
-                break;
+    private static <T> void init(List<Invoker<T>> invokers) {
+        index = new HashMap<>();
+        weight = new AtomicIntegerArray(invokers.size());
+        concurrentNum = new AtomicIntegerArray(invokers.size());
+        for (int i = 0; i < invokers.size(); i++) {
+            index.put(invokers.get(i).getUrl().getHost(), i);
+            weight.set(i, initWeight);
+            concurrentNum.set(i, 0);
+            concurrentMaxNum.set(i, Integer.MAX_VALUE);
         }
-        return weight;
     }
 
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        // 初始化统计
+        if (first.compareAndSet(true, false)) {
+            init(invokers);
+        }
         if (invokers == null || invokers.isEmpty()) {
             return null;
         }
@@ -60,12 +66,12 @@ public class UserLoadBalance implements LoadBalance {
         // the weight of every invokers
         int[] weights = new int[length];
         // the first invoker's weight
-        int firstWeight = getWeight(invokers.get(0), invocation);
+        int firstWeight = weight.get(0);
         weights[0] = firstWeight;
         // The sum of weights
         int totalWeight = firstWeight;
         for (int i = 1; i < length; i++) {
-            int weight = getWeight(invokers.get(i), invocation);
+            int weight = UserLoadBalance.weight.get(i);
             // save for later use
             weights[i] = weight;
             // Sum
