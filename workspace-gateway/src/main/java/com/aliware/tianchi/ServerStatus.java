@@ -29,7 +29,7 @@ public class ServerStatus {
                 resentSuccess = 0;
                 resentError = 0;
             }
-        }, 300, 5000);
+        }, 300, 3000);
     }
     
     public void update(ProviderStatus providerStatus) {
@@ -42,7 +42,7 @@ public class ServerStatus {
             return 0;
         }
         return 1 / (double) concurrent * success / (double) (1 + totalDelay)
-                * (resentSuccess / (double) (1 + resentError) * resentSuccess / (double) (1 + resentError))
+                * (resentSuccess / (double) (1 + resentError))
                 * (1 + resentSuccess) / (double) (1 + resentDelay);
         // return 1 / (double) (1 + resentError)*1000;
     }
