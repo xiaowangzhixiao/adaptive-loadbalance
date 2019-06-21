@@ -28,9 +28,9 @@ public class TestServerFilter implements Filter {
                 }
             }
 
-            ProviderManager.providerStatus.current.incrementAndGet();
-            if (ProviderManager.providerStatus.current.get() > ProviderManager.providerStatus.maxCurrent) {
-                ProviderManager.providerStatus.maxCurrent = ProviderManager.providerStatus.current.get();
+            ProviderManager.providerStatus.current++;
+            if (ProviderManager.providerStatus.current > ProviderManager.providerStatus.maxCurrent) {
+                ProviderManager.providerStatus.maxCurrent = ProviderManager.providerStatus.current;
             }
             
             Result result = invoker.invoke(invocation);
@@ -43,7 +43,9 @@ public class TestServerFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        ProviderManager.providerStatus.current.decrementAndGet();
+        if (ProviderManager.providerStatus.current > 0) {
+            ProviderManager.providerStatus.current--;
+        }
         return result;
     }
 

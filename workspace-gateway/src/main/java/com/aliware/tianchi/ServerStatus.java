@@ -2,7 +2,6 @@ package com.aliware.tianchi;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -34,7 +33,7 @@ public class ServerStatus {
     }
     
     public void update(ProviderStatus providerStatus) {
-        activeConcurrent = providerStatus.current.get();
+        activeConcurrent = providerStatus.current;
         maxActiveConcurrent = providerStatus.maxCurrent;
     }
 
@@ -43,8 +42,8 @@ public class ServerStatus {
             return 0;
         }
         return 1 / (double) concurrent * success / (double) (1 + totalDelay)
-                * ((1 + resentSuccess) / (double) (1 + resentError))
-                * resentSuccess / (double) (1 + resentDelay) * resentSuccess / (double) (1 + resentDelay);
+                * (resentSuccess / (double) (1 + resentError) * resentSuccess / (double) (1 + resentError))
+                * (1 + resentSuccess) / (double) (1 + resentDelay);
         // return 1 / (double) (1 + resentError)*1000;
     }
 
