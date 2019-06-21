@@ -51,13 +51,12 @@ public class UserLoadBalance implements LoadBalance {
         double maxWeight = 0.0;
         int maxIndex = -1;
         for (int i = 0; i < invokers.size(); i++) {
-            // System.out.println("get Weight "+i);
-            double weights = statusMap.get(invokers.get(i).getUrl().toIdentityString()).getWeight();
-            if (weights > maxWeight) {
-                maxWeight = weights;
+            double weight = statusMap.get(invokers.get(i).getUrl().toIdentityString()).getWeight();
+            if (weight > maxWeight) {
+                maxWeight = weight;
                 maxIndex = i;
             }
-            if (weights == 0) {
+            if (weight == 0) {
                 maxIndex = -1;
                 break;
             }
@@ -67,7 +66,6 @@ public class UserLoadBalance implements LoadBalance {
             maxIndex = ThreadLocalRandom.current().nextInt(invokers.size());
         }
 
-        // System.out.println("maxIndex = ,"+maxIndex);
         return invokers.get(maxIndex);
     }
 }

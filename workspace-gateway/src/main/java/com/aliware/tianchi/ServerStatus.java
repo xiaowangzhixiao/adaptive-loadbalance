@@ -12,7 +12,7 @@ import org.apache.dubbo.rpc.Result;
  */
 public class ServerStatus {
 
-    private AtomicInteger concurrent = new AtomicInteger(0);
+    private int concurrent = 0;
     private int activeConcurrent = 0;
     private int maxActiveConcurrent = 0;
     private int success=0;
@@ -39,10 +39,10 @@ public class ServerStatus {
     }
 
     public double getWeight() {
-        if (concurrent.get() == 0) {
+        if (concurrent == 0) {
             return 0;
         }
-        return 1 / (double) concurrent.get() * success / (double) (1 + totalDelay)
+        return 1 / (double) concurrent * success / (double) (1 + totalDelay)
                 * ((1 + resentSuccess) / (double) (1 + resentError))
                 * resentSuccess / (double) (1 + resentDelay) * resentSuccess / (double) (1 + resentDelay);
         // return 1 / (double) (1 + resentError)*1000;
@@ -50,11 +50,13 @@ public class ServerStatus {
 
     public void start(Invocation invocation) {
         invocation.getAttachments().put("start", String.valueOf(System.currentTimeMillis()));
-        concurrent.incrementAndGet();
+        concurrent++;
     }
 
     public void stop(Result result, Invocation invocation) {
-        concurrent.decrementAndGet();
+        if (concurrent > 0) {
+           concurrent--; 
+        }
         
         if (result.hasException() || result.getValue() == null || result.getValue().equals("")) {
             resentError++;
