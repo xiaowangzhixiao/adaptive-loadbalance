@@ -29,7 +29,7 @@ public class ServerStatus {
                 recentSuccess = 0;
                 recentError = 0;
             }
-        }, 300, 6000);
+        }, 300, 5500);
     }
     
     public void update(ProviderStatus providerStatus) {
