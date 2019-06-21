@@ -42,10 +42,10 @@ public class ServerStatus {
         if (concurrent.get() == 0) {
             return 0;
         }
-        // return 1 / (double) concurrent.get() * success / (double) (1 + totalDelay)
-        //         * ((1 + resentSuccess) / (double) (1 + resentError))
-        //         * resentSuccess / (double) (1 + resentDelay) * resentSuccess / (double) (1 + resentDelay);
-        return 1 / (double) (1 + resentError)*1000;
+        return 1 / (double) concurrent.get() * success / (double) (1 + totalDelay)
+                * ((1 + resentSuccess) / (double) (1 + resentError))
+                * resentSuccess / (double) (1 + resentDelay) * resentSuccess / (double) (1 + resentDelay);
+        // return 1 / (double) (1 + resentError)*1000;
     }
 
     public void start(Invocation invocation) {

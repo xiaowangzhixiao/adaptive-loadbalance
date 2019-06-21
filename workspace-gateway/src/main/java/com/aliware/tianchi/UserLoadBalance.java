@@ -30,7 +30,7 @@ public class UserLoadBalance implements LoadBalance {
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         // 初始化统计
         if (statusMap.size() == 0) {
-            synchronized (this) {
+            synchronized (statusMap) {
                 if (statusMap.size() == 0) {
                     init(invokers);
                 }
@@ -48,43 +48,26 @@ public class UserLoadBalance implements LoadBalance {
     }
 
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        // Number of invokers
-        int length = invokers.size();
-        // Every invoker has the same weight?
-        boolean sameWeight = true;
-        // the weight of every invokers
-        double[] weights = new double[length];
-        // the first invoker's weight
-        double firstWeight = statusMap.get(invokers.get(0).getUrl().toIdentityString()).getWeight();
-        weights[0] = firstWeight;
-        // The sum of weights
-        double totalWeight = firstWeight;
-        for (int i = 1; i < length; i++) {
-            double weight = statusMap.get(invokers.get(0).getUrl().toIdentityString()).getWeight();
-            // save for later use
-            weights[i] = weight;
-            // Sum
-            totalWeight += weight;
-            if (sameWeight && weight != firstWeight) {
-                sameWeight = false;
+        double maxWeight = 0.0;
+        int maxIndex = -1;
+        for (int i = 0; i < invokers.size(); i++) {
+            // System.out.println("get Weight "+i);
+            double weights = statusMap.get(invokers.get(i).getUrl().toIdentityString()).getWeight();
+            if (weights > maxWeight) {
+                maxWeight = weights;
+                maxIndex = i;
             }
-            if (weight == 0) {
-                sameWeight = true;
+            if (weights == 0) {
+                maxIndex = -1;
+                break;
             }
         }
-        if (totalWeight > 0 && !sameWeight) {
-            System.out.println("weights:" + weights);
-            // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-            double offset = ThreadLocalRandom.current().nextDouble(totalWeight);
-            // Return a invoker based on the random value.
-            for (int i = 0; i < length; i++) {
-                offset -= weights[i];
-                if (offset < 0) {
-                    return invokers.get(i);
-                }
-            }
+
+        if (maxIndex == -1) {
+            maxIndex = ThreadLocalRandom.current().nextInt(invokers.size());
         }
-        // If all invokers have the same weight value or totalWeight=0, return evenly.
-        return invokers.get(ThreadLocalRandom.current().nextInt(length));
+
+        // System.out.println("maxIndex = ,"+maxIndex);
+        return invokers.get(maxIndex);
     }
 }
