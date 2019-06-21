@@ -19,9 +19,21 @@ import org.apache.dubbo.rpc.RpcException;
 public class TestServerFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        try{
-            Result result = invoker.invoke(invocation);
+        try {
+            if (ProviderManager.providerStatus == null) {
+                synchronized (this) {
+                    if (ProviderManager.providerStatus == null) {
+                        ProviderManager.providerStatus = new ProviderStatus(invoker.getUrl().toIdentityString(), 0, 0);
+                    }
+                }
+            }
 
+            ProviderManager.providerStatus.current.incrementAndGet();
+            if (ProviderManager.providerStatus.current.get() > ProviderManager.providerStatus.maxCurrent) {
+                ProviderManager.providerStatus.maxCurrent = ProviderManager.providerStatus.current.get();
+            }
+            
+            Result result = invoker.invoke(invocation);
             return result;
         }catch (Exception e){
             throw e;
@@ -31,9 +43,7 @@ public class TestServerFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-//        if(result.hasException()){
-//            System.out.println(result.getException().getMessage());
-//        }
+        ProviderManager.providerStatus.current.decrementAndGet();
         return result;
     }
 

@@ -19,20 +19,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CallbackServiceImpl implements CallbackService {
 
     public CallbackServiceImpl() {
-        // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         if (!listeners.isEmpty()) {
-        //             for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
-        //                 try {
-        //                     entry.getValue().receiveServerMsg(System.getProperty("quota") + " " + new Date().toString());
-        //                 } catch (Throwable t1) {
-        //                     listeners.remove(entry.getKey());
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }, 0, 5000);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!listeners.isEmpty()) {
+                    for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
+                        try {
+                            if (ProviderManager.providerStatus.name != null) {
+                                String status = ProviderManager.providerStatus.encode();
+                                System.out.println(status);
+                                entry.getValue().receiveServerMsg(status);
+                            }
+                        } catch (Throwable t1) {
+                        }
+                    }
+                }
+            }
+        }, 0, 5000);
     }
 
     private Timer timer = new Timer();
@@ -45,7 +48,8 @@ public class CallbackServiceImpl implements CallbackService {
 
     @Override
     public void addListener(String key, CallbackListener listener) {
+        System.out.println("addListener");
         listeners.put(key, listener);
-        listener.receiveServerMsg(new Date().toString()); // send notification for change
+        listener.receiveServerMsg("0000000"); // send notification for change
     }
 }

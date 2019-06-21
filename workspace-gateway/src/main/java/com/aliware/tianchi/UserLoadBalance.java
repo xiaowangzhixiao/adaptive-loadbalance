@@ -6,11 +6,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * @author daofeng.xjf
@@ -22,33 +20,20 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    private static final int initWeight = 1;
-    public static Map<String, Integer> index;
-    public static AtomicIntegerArray weight;
-    public static AtomicIntegerArray concurrentNum;
-    public static AtomicIntegerArray concurrentMaxNum; 
-    private static Boolean first = true;
-    public static Boolean second = true;
+    public static ConcurrentHashMap<String, ServerStatus> statusMap = new ConcurrentHashMap<>();
 
     private static <T> void init(List<Invoker<T>> invokers) {
-        index = new HashMap<>();
-        weight = new AtomicIntegerArray(invokers.size());
-        concurrentNum = new AtomicIntegerArray(invokers.size());
-        for (int i = 0; i < invokers.size(); i++) {
-            index.put(invokers.get(i).getUrl().getHost(), i);
-            weight.set(i, initWeight);
-            concurrentNum.set(i, 0);
-            concurrentMaxNum.set(i, 0);
-        }
+        invokers.forEach(x->statusMap.put(x.getUrl().toIdentityString(), new ServerStatus()));
     }
 
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         // 初始化统计
-        if (first) {
-            synchronized (first) {
-                first = false;
-                init(invokers);
+        if (statusMap.size() == 0) {
+            synchronized (this) {
+                if (statusMap.size() == 0) {
+                    init(invokers);
+                }
             }
         }
         
@@ -68,14 +53,14 @@ public class UserLoadBalance implements LoadBalance {
         // Every invoker has the same weight?
         boolean sameWeight = true;
         // the weight of every invokers
-        int[] weights = new int[length];
+        double[] weights = new double[length];
         // the first invoker's weight
-        int firstWeight = weight.get(0);
+        double firstWeight = statusMap.get(invokers.get(0).getUrl().toIdentityString()).getWeight();
         weights[0] = firstWeight;
         // The sum of weights
-        int totalWeight = firstWeight;
+        double totalWeight = firstWeight;
         for (int i = 1; i < length; i++) {
-            int weight = UserLoadBalance.weight.get(i);
+            double weight = statusMap.get(invokers.get(0).getUrl().toIdentityString()).getWeight();
             // save for later use
             weights[i] = weight;
             // Sum
@@ -83,10 +68,14 @@ public class UserLoadBalance implements LoadBalance {
             if (sameWeight && weight != firstWeight) {
                 sameWeight = false;
             }
+            if (weight == 0) {
+                sameWeight = true;
+            }
         }
         if (totalWeight > 0 && !sameWeight) {
+            System.out.println("weights:" + weights);
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-            int offset = ThreadLocalRandom.current().nextInt(totalWeight);
+            double offset = ThreadLocalRandom.current().nextDouble(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < length; i++) {
                 offset -= weights[i];
