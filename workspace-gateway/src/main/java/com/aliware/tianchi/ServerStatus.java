@@ -16,18 +16,18 @@ public class ServerStatus {
     private int maxActiveConcurrent = 0;
     private int success=0;
     private int totalDelay=0;
-    private int resentSuccess=0;
-    private int resentDelay=0;
-    private int resentError = 0;
+    private int recentSuccess=0;
+    private int recentDelay=0;
+    private int recentError = 0;
 
     public ServerStatus() {
         new Timer().schedule(new TimerTask() {
 
             @Override
             public void run() {
-                resentDelay = 0;
-                resentSuccess = 0;
-                resentError = 0;
+                recentDelay = 0;
+                recentSuccess = 0;
+                recentError = 0;
             }
         }, 300, 3000);
     }
@@ -42,8 +42,8 @@ public class ServerStatus {
             return 0;
         }
         return 1 / (double) concurrent * success / (double) (1 + totalDelay)
-                * (resentSuccess / (double) (1 + resentError))
-                * (1 + resentSuccess) / (double) (1 + resentDelay);
+                * (recentSuccess / (double) (1 + recentError))
+                * (1 + recentSuccess) / (double) (1 + recentDelay)* (1 + recentSuccess) / (double) (1 + recentDelay);
         // return 1 / (double) (1 + resentError)*1000;
     }
 
@@ -58,14 +58,14 @@ public class ServerStatus {
         }
         
         if (result.hasException() || result.getValue() == null || result.getValue().equals("")) {
-            resentError++;
+            recentError++;
         } else {
             success++;
-            resentSuccess++;
+            recentSuccess++;
             long start = Long.parseLong(invocation.getAttachments().get("start"));
             long delay = System.currentTimeMillis() - start;
             totalDelay += delay;
-            resentDelay += delay;
+            recentDelay += delay;
         }
     }
 }
