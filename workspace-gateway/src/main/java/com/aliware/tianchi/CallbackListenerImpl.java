@@ -14,6 +14,7 @@ public class CallbackListenerImpl implements CallbackListener {
 
     @Override
     public void receiveServerMsg(String msg) {
+        System.out.println(msg);
         ProviderStatus providerStatus = new ProviderStatus(msg);
         if (providerStatus.name != null) {
             UserLoadBalance.statusMap.get(providerStatus.name).update(providerStatus);

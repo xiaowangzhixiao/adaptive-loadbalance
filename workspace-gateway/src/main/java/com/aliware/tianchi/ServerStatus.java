@@ -42,7 +42,7 @@ public class ServerStatus {
         if (concurrent.get() == 0) {
             return 0;
         }
-        return activeConcurrent / (double) concurrent.get() * success / (double) (1 + totalDelay)
+        return 1 / (double) concurrent.get() * success / (double) (1 + totalDelay)
                 * ((1 + resentSuccess) / (double) (1 + resentError)) * resentSuccess / (double) (1 + resentDelay)
                 * resentSuccess / (double) (1 + resentDelay);
     }
