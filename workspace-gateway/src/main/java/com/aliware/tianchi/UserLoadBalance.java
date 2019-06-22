@@ -30,7 +30,7 @@ public class UserLoadBalance implements LoadBalance {
 
             @Override
             public void run() {
-                for (ServerStatus  serverStatus : statusMap.values()) {
+                for (ServerStatus serverStatus : statusMap.values()) {
                     serverStatus.reset();
                 }
             }
