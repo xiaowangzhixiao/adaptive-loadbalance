@@ -53,7 +53,7 @@ public class ServerStatus {
         if (concurrent == 0) {
             return 0;
         }
-        return recentErrorRate * avgRecentDelay * avgRecentDelay;
+        return queuingRate * recentErrorRate * avgRecentDelay * avgRecentDelay;
 
     }
 
