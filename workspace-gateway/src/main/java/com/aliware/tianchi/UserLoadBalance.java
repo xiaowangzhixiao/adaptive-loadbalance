@@ -23,8 +23,10 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
+    private Timer timer = new Timer();
+
     public UserLoadBalance() {
-        new Timer().schedule(new TimerTask() {
+        timer.schedule(new TimerTask() {
 
             @Override
             public void run() {

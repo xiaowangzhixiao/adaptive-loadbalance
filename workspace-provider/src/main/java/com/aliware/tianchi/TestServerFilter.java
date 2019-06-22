@@ -20,18 +20,18 @@ public class TestServerFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            if (ProviderManager.providerStatus == null) {
-                synchronized (this) {
-                    if (ProviderManager.providerStatus == null) {
-                        ProviderManager.providerStatus = new ProviderStatus(invoker.getUrl().toIdentityString(), 0, 0);
-                    }
-                }
-            }
+            // if (ProviderManager.providerStatus == null) {
+            //     synchronized (this) {
+            //         if (ProviderManager.providerStatus == null) {
+            //             ProviderManager.providerStatus = new ProviderStatus(invoker.getUrl().toIdentityString(), 0, 0);
+            //         }
+            //     }
+            // }
 
-            ProviderManager.providerStatus.current++;
-            if (ProviderManager.providerStatus.current > ProviderManager.providerStatus.maxCurrent) {
-                ProviderManager.providerStatus.maxCurrent = ProviderManager.providerStatus.current;
-            }
+            // ProviderManager.providerStatus.current++;
+            // if (ProviderManager.providerStatus.current > ProviderManager.providerStatus.maxCurrent) {
+            //     ProviderManager.providerStatus.maxCurrent = ProviderManager.providerStatus.current;
+            // }
             
             Result result = invoker.invoke(invocation);
             return result;
@@ -43,9 +43,9 @@ public class TestServerFilter implements Filter {
 
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (ProviderManager.providerStatus.current > 0) {
-            ProviderManager.providerStatus.current--;
-        }
+        // if (ProviderManager.providerStatus.current > 0) {
+        //     ProviderManager.providerStatus.current--;
+        // }
         return result;
     }
 

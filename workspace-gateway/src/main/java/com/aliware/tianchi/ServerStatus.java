@@ -54,7 +54,7 @@ public class ServerStatus {
             return 0;
         }
         return queuingRate * recentErrorRate * avgRecentDelay * avgRecentDelay;
-        // return 1 / (double) (1 + resentError)*1000;
+
     }
 
     public void start(Invocation invocation) {

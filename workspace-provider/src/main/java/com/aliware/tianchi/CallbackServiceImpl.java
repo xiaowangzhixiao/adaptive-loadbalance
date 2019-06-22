@@ -18,26 +18,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CallbackServiceImpl implements CallbackService {
 
     public CallbackServiceImpl() {
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (!listeners.isEmpty()) {
-                    for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
-                        try {
-                            if (ProviderManager.providerStatus.name != null) {
-                                String status = ProviderManager.providerStatus.encode();
-                                System.out.println(status);
-                                entry.getValue().receiveServerMsg(status);
-                            }
-                        } catch (Throwable t1) {
-                        }
-                    }
-                }
-            }
-        }, 0, 5500);
+        // timer.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         if (!listeners.isEmpty()) {
+        //             for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
+        //                 try {
+        //                     if (ProviderManager.providerStatus.name != null) {
+        //                         String status = ProviderManager.providerStatus.encode();
+        //                         System.out.println(status);
+        //                         entry.getValue().receiveServerMsg(status);
+        //                     }
+        //                 } catch (Throwable t1) {
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }, 0, 5500);
     }
 
-    private Timer timer = new Timer();
+    // private Timer timer = new Timer();
 
     /**
      * key: listener type
