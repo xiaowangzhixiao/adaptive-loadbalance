@@ -41,7 +41,7 @@ public class ServerStatus {
         if (concurrent == 0) {
             return 0;
         }
-        return 1 / (double) concurrent * success / (double) (1 + totalDelay)
+        return 1 / (double) concurrent
                 * (recentSuccess / (double) (1 + recentError))
                 * (1 + recentSuccess) / (double) (1 + recentDelay)* (1 + recentSuccess) / (double) (1 + recentDelay);
         // return 1 / (double) (1 + resentError)*1000;
