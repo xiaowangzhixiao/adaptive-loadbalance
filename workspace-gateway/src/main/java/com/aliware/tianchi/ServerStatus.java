@@ -21,15 +21,13 @@ public class ServerStatus {
     private int recentError = 0;
 
     public ServerStatus() {
-        new Timer().schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                recentDelay = 0;
-                recentSuccess = 0;
-                recentError = 0;
-            }
-        }, 300, 5500);
+        
+    }
+    
+    public void reset() {
+        recentDelay = 0;
+        recentSuccess = 0;
+        recentError = 0;
     }
     
     public void update(ProviderStatus providerStatus) {
@@ -38,12 +36,24 @@ public class ServerStatus {
     }
 
     public double getWeight() {
+        double queuingRate;
+        double recentErrorRate;
+        double avgRecentDelay;
+
+        if (activeConcurrent == 0) {
+            queuingRate = 1 / (double) concurrent;
+        } else {
+            queuingRate = activeConcurrent / (double) concurrent;
+        }
+
+        recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
+
+        avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
+        
         if (concurrent == 0) {
             return 0;
         }
-        return 1 / (double) concurrent
-                * (recentSuccess / (double) (1 + recentError))
-                * (1 + recentSuccess) / (double) (1 + recentDelay)* (1 + recentSuccess) / (double) (1 + recentDelay);
+        return queuingRate * recentErrorRate * avgRecentDelay * avgRecentDelay;
         // return 1 / (double) (1 + resentError)*1000;
     }
 

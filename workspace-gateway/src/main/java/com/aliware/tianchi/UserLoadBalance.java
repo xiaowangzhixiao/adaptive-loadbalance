@@ -6,8 +6,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -20,7 +23,19 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    public static ConcurrentHashMap<String, ServerStatus> statusMap = new ConcurrentHashMap<>();
+    public UserLoadBalance() {
+        new Timer().schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                for (ServerStatus  serverStatus : statusMap.values()) {
+                    serverStatus.reset();
+                }
+            }
+        }, 300, 5500);
+    }
+
+    public static Map<String, ServerStatus> statusMap = new HashMap<>();
 
     private static <T> void init(List<Invoker<T>> invokers) {
         invokers.forEach(x->statusMap.put(x.getUrl().toIdentityString(), new ServerStatus()));
