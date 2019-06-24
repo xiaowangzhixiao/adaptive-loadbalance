@@ -72,10 +72,12 @@ public class ServerStatus {
         } else {
             success++;
             recentSuccess++;
-            long start = Long.parseLong(invocation.getAttachments().get("start"));
-            long delay = System.currentTimeMillis() - start;
-            totalDelay += delay;
-            recentDelay += delay;
+            if (invocation.getAttachments().get("start") != null) {
+                long start = Long.parseLong(invocation.getAttachments().get("start"));
+                long delay = System.currentTimeMillis() - start;
+                totalDelay += delay;
+                recentDelay += delay;
+            }
         }
     }
 }

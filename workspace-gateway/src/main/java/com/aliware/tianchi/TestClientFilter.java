@@ -19,9 +19,11 @@ import org.apache.dubbo.rpc.RpcException;
 public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        try{
-            ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
-            serverStatus.start(invocation);
+        try {
+            if (UserLoadBalance.statusMap != null) {
+                ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
+                serverStatus.start(invocation);
+            }
             
             Result result = invoker.invoke(invocation);
             return result;
@@ -32,8 +34,10 @@ public class TestClientFilter implements Filter {
     
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
-        serverStatus.stop(result, invocation);
+        if (UserLoadBalance.statusMap != null) {
+            ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
+            serverStatus.stop(result, invocation);
+        }
         return result;
     }
 }
