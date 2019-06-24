@@ -1,8 +1,5 @@
 package com.aliware.tianchi;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 
