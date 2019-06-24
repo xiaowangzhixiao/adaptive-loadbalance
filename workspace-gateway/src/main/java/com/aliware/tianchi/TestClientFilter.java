@@ -20,8 +20,8 @@ public class TestClientFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         try {
-            if (UserLoadBalance.statusMap != null) {
-                ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
+            if (UserLoadBalance.statusMap != null && invocation.getMethodName().equals("hash")) {
+                ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().getPort());
                 serverStatus.start(invocation);
             }
             
@@ -34,8 +34,8 @@ public class TestClientFilter implements Filter {
     
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (UserLoadBalance.statusMap != null) {
-            ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().toIdentityString());
+        if (UserLoadBalance.statusMap != null && invocation.getMethodName().equals("hash")) {
+            ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().getPort());
             serverStatus.stop(result, invocation);
         }
         return result;

@@ -6,7 +6,7 @@ package com.aliware.tianchi;
  */
 public class ProviderStatus {
 
-    public String name;
+    public int name;
 
     public int maxCurrent;
 
@@ -16,22 +16,18 @@ public class ProviderStatus {
         return name + "," + current + "," + maxCurrent;
     }
 
-    public ProviderStatus(String name, int current, int maxCurrent) {
+    public ProviderStatus(int name, int current, int maxCurrent) {
         this.name = name;
         this.current = current;
         this.maxCurrent = maxCurrent;
     }
 
-    public ProviderStatus(String status) {
+    public static ProviderStatus decode(String status) {
         String[] strings = status.split(",");
         if (strings.length < 3) {
-            this.name = null;
-            this.current = 0;
-            this.maxCurrent = 0;
+            return null;
         } else {
-            this.name = strings[0];
-            this.current = Integer.parseInt(strings[1]);
-            this.maxCurrent = Integer.parseInt(strings[2]);
+            return new ProviderStatus(Integer.parseInt(strings[0]), Integer.parseInt(strings[1]), Integer.parseInt(strings[2]));
         }
     }
 }

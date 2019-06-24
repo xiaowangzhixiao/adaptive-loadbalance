@@ -37,10 +37,10 @@ public class UserLoadBalance implements LoadBalance {
         }, 300, 5500);
     }
 
-    public static Map<String, ServerStatus> statusMap = new HashMap<>();
+    public static Map<Integer, ServerStatus> statusMap = new HashMap<>();
 
     private static <T> void init(List<Invoker<T>> invokers) {
-        invokers.forEach(x->statusMap.put(x.getUrl().toIdentityString(), new ServerStatus()));
+        invokers.forEach(x->statusMap.put(x.getUrl().getPort(), new ServerStatus()));
     }
 
     @Override
@@ -68,7 +68,7 @@ public class UserLoadBalance implements LoadBalance {
         double maxWeight = 0.0;
         int maxIndex = -1;
         for (int i = 0; i < invokers.size(); i++) {
-            double weight = statusMap.get(invokers.get(i).getUrl().toIdentityString()).getWeight();
+            double weight = statusMap.get(invokers.get(i).getUrl().getPort()).getWeight();
             if (weight > maxWeight) {
                 maxWeight = weight;
                 maxIndex = i;

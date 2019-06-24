@@ -40,8 +40,13 @@ public class ServerStatus {
         double recentErrorRate;
         double avgRecentDelay;
 
+        if (concurrent == 0) {
+            return 0;
+        }
+
         if (activeConcurrent == 0) {
-            queuingRate = 1 / (double) concurrent;
+            // queuingRate = 1 / (double) concurrent;
+            return 0;
         } else {
             queuingRate = activeConcurrent / (double) concurrent;
         }
@@ -50,9 +55,7 @@ public class ServerStatus {
 
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        if (concurrent == 0) {
-            return 0;
-        }
+        
         return queuingRate * recentErrorRate * avgRecentDelay * avgRecentDelay;
 
     }
