@@ -66,7 +66,7 @@ public class ServerStatus {
             concurrent--;
         }
 
-        String status = invocation.getAttachment("status");
+        String status = result.getAttachment("status");
         if (status != null) {
             ProviderStatus providerStatus = ProviderStatus.decode(status);
             if (providerStatus != null) {

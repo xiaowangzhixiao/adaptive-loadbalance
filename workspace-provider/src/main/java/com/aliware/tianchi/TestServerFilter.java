@@ -55,7 +55,7 @@ public class TestServerFilter implements Filter {
             }
         }
         if (providerStatus != null) {
-            invocation.getAttachments().put("status", providerStatus.encode());
+            result.getAttachments().put("status", providerStatus.encode());
         }
         
         return result;
