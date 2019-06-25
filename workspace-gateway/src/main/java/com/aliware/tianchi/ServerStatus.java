@@ -1,5 +1,7 @@
 package com.aliware.tianchi;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 
@@ -8,7 +10,7 @@ import org.apache.dubbo.rpc.Result;
  */
 public class ServerStatus {
 
-    private int concurrent = 0;
+    private AtomicInteger concurrent = new AtomicInteger(0);
     private int activeConcurrent = 0;
     private int maxActiveConcurrent = 0;
     private int success=0;
@@ -37,14 +39,14 @@ public class ServerStatus {
         double recentErrorRate;
         double avgRecentDelay;
 
-        if (concurrent == 0 ) {
+        if (concurrent.get() == 0 ) {
             return 0;
         }
 
         if (activeConcurrent == 0) {
             return 0;
         } else {
-            queuingRate = activeConcurrent / concurrent;
+            queuingRate = activeConcurrent / (double) concurrent.get();
         }
 
         recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
@@ -58,12 +60,12 @@ public class ServerStatus {
 
     public void start(Invocation invocation) {
         invocation.getAttachments().put("start", String.valueOf(System.currentTimeMillis()));
-        concurrent++;
+        concurrent.incrementAndGet();
     }
 
     public void stop(Result result, Invocation invocation) {
-        if (concurrent > 0) {
-            concurrent--;
+        if (concurrent.get() > 0) {
+            concurrent.decrementAndGet();
         }
 
         String status = result.getAttachment("status");
