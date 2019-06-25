@@ -37,16 +37,15 @@ public class ServerStatus {
         double recentErrorRate;
         double avgRecentDelay;
 
-        if (concurrent == 0) {
+        if (concurrent == 0 ) {
             return 0;
         }
 
-        // if (activeConcurrent == 0) {
-            queuingRate = 1 / (double) concurrent;
-        //     return 0;
-        // } else {
-        //     queuingRate = activeConcurrent / (double) concurrent;
-        // }
+        if (activeConcurrent == 0) {
+            return 0;
+        } else {
+            queuingRate = 1 / (double) (concurrent - activeConcurrent + 1);
+        }
 
         recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
 
@@ -64,20 +63,34 @@ public class ServerStatus {
 
     public void stop(Result result, Invocation invocation) {
         if (concurrent > 0) {
-           concurrent--; 
+            concurrent--;
         }
-        
+
+        String status = invocation.getAttachment("status");
+        if (status != null) {
+            ProviderStatus providerStatus = ProviderStatus.decode(status);
+            if (providerStatus != null) {
+                update(providerStatus);
+            }
+        }
+
         if (result.hasException() || result.getValue() == null || result.getValue().equals("")) {
             recentError++;
         } else {
             success++;
             recentSuccess++;
-            if (invocation.getAttachments().get("start") != null) {
-                long start = Long.parseLong(invocation.getAttachments().get("start"));
+            String startString = invocation.getAttachment("start");
+            if (startString != null) {
+                long start = Long.parseLong(startString);
                 long delay = System.currentTimeMillis() - start;
                 totalDelay += delay;
                 recentDelay += delay;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%d,%d,%d,%d,%d", activeConcurrent,concurrent,maxActiveConcurrent,recentDelay,recentError,recentSuccess,success,totalDelay);
     }
 }
