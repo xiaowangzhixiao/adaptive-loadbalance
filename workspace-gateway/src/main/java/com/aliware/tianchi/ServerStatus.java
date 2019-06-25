@@ -44,7 +44,7 @@ public class ServerStatus {
         if (activeConcurrent == 0) {
             return 0;
         } else {
-            queuingRate = 1 / (double) (concurrent - activeConcurrent + 1);
+            queuingRate = activeConcurrent / concurrent;
         }
 
         recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
