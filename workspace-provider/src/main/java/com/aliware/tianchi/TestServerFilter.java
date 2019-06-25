@@ -54,6 +54,10 @@ public class TestServerFilter implements Filter {
                 providerStatus.current--;
             }
         }
+        if (providerStatus != null) {
+            invocation.getAttachments().put("status", providerStatus.encode());
+        }
+        
         return result;
     }
 

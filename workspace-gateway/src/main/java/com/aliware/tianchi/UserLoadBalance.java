@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -30,8 +31,9 @@ public class UserLoadBalance implements LoadBalance {
 
             @Override
             public void run() {
-                for (ServerStatus serverStatus : statusMap.values()) {
-                    serverStatus.reset();
+                for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
+                    System.out.println(serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
+                    serverStatus.getValue().reset();
                 }
             }
         }, 300, 2000);
@@ -74,8 +76,9 @@ public class UserLoadBalance implements LoadBalance {
                 maxIndex = i;
             }
             if (weight == 0) {
-                maxIndex = -1;
-                break;
+                // maxIndex = -1;
+                // break;
+                return invokers.get(i);
             }
         }
 

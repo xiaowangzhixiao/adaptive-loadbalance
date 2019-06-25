@@ -14,10 +14,10 @@ public class CallbackListenerImpl implements CallbackListener {
 
     @Override
     public void receiveServerMsg(String msg) {
-        ProviderStatus providerStatus = ProviderStatus.decode(msg);
-        if (providerStatus != null && UserLoadBalance.statusMap.size() != 0) {
-            UserLoadBalance.statusMap.get(providerStatus.name).update(providerStatus);
-        }
+        // ProviderStatus providerStatus = ProviderStatus.decode(msg);
+        // if (providerStatus != null && UserLoadBalance.statusMap.size() != 0) {
+        //     UserLoadBalance.statusMap.get(providerStatus.name).update(providerStatus);
+        // }
     }
 
 }
