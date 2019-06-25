@@ -41,12 +41,12 @@ public class ServerStatus {
             return 0;
         }
 
-        if (activeConcurrent == 0) {
-            // queuingRate = 1 / (double) concurrent;
-            return 0;
-        } else {
-            queuingRate = activeConcurrent / (double) concurrent;
-        }
+        // if (activeConcurrent == 0) {
+            queuingRate = 1 / (double) concurrent;
+        //     return 0;
+        // } else {
+        //     queuingRate = activeConcurrent / (double) concurrent;
+        // }
 
         recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
 
