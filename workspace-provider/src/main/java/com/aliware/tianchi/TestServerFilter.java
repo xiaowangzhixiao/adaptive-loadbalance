@@ -18,6 +18,8 @@ import org.apache.dubbo.rpc.RpcException;
 @Activate(group = Constants.PROVIDER)
 public class TestServerFilter implements Filter {
 
+    private static boolean first = true;
+
     public static ProviderStatus providerStatus = null;
 
     @Override
@@ -50,6 +52,12 @@ public class TestServerFilter implements Filter {
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (invocation.getMethodName().equals("hash")) {
+            if (first) {
+                first = false;
+                result.getAttachments().put(Constants.THREADS_KEY,
+                        invoker.getUrl().getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS) + "");
+            }
+        
             if (providerStatus.current.get() > 0) {
                 providerStatus.current.decrementAndGet();
             }
@@ -57,6 +65,7 @@ public class TestServerFilter implements Filter {
         if (providerStatus != null) {
             result.getAttachments().put("status", providerStatus.encode());
         }
+        
         
         return result;
     }

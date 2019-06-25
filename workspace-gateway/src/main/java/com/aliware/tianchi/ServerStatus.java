@@ -2,6 +2,7 @@ package com.aliware.tianchi;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 
@@ -10,14 +11,15 @@ import org.apache.dubbo.rpc.Result;
  */
 public class ServerStatus {
 
-    private AtomicInteger concurrent = new AtomicInteger(0);
-    private int activeConcurrent = 0;
-    private int maxActiveConcurrent = 0;
-    private int success=0;
-    private int totalDelay=0;
-    private int recentSuccess=0;
-    private int recentDelay=0;
-    private int recentError = 0;
+    public AtomicInteger concurrent = new AtomicInteger(0);
+    public int activeConcurrent = 0;
+    public int maxThreads = 0;
+    public int maxActiveConcurrent = 0;
+    public int success=0;
+    public int totalDelay=0;
+    public int recentSuccess=0;
+    public int recentDelay=0;
+    public int recentError = 0;
 
     private long startTime;
 
@@ -38,32 +40,21 @@ public class ServerStatus {
 
     public double getWeight() {
         double queuingRate;
-        double recentErrorRate;
         double avgRecentDelay;
 
-        if (concurrent.get() == 0) {
-            return 0;
-        }
-        
-        if (startTime != -1 && System.currentTimeMillis() - startTime > 20000) {
-            startTime = -1;
-        }
-        
-        if (startTime == -1 && concurrent.get() > maxActiveConcurrent*0.95) {
+        if (maxThreads != 0 && concurrent.get() > maxThreads*0.9) {
             return Integer.MIN_VALUE;
         }
-
-        if (activeConcurrent == 0) {
+        
+        if (activeConcurrent == 0 || concurrent.get() == 0) {
             return 0;
         } else {
             queuingRate = activeConcurrent / (double) concurrent.get();
         }
 
-        recentErrorRate = (1 + recentSuccess) / (double) (1 + recentError);
-
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        return queuingRate * queuingRate * recentErrorRate;
+        return queuingRate * queuingRate * avgRecentDelay ;
 
     }
 
@@ -85,6 +76,11 @@ public class ServerStatus {
             }
         }
 
+        String maxThreads = result.getAttachment(Constants.THREADS_KEY);
+        if (maxThreads != null) {
+            this.maxThreads = Integer.parseInt(maxThreads);
+        }
+
         if (result.hasException() || result.getValue() == null || result.getValue().equals("")) {
             recentError++;
         } else {
@@ -102,6 +98,16 @@ public class ServerStatus {
 
     @Override
     public String toString() {
-        return String.format("%d,%d,%d,%d,%d,%d,%d,%d", activeConcurrent ,concurrent.get() ,maxActiveConcurrent,recentDelay,recentError,recentSuccess,success,totalDelay);
+        return String.format("%f,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                getWeight(),
+                activeConcurrent, 
+                concurrent.get(), 
+                maxActiveConcurrent, 
+                recentSuccess,
+                recentDelay, 
+                recentError, 
+                success, 
+                totalDelay, 
+                maxThreads);
     }
 }
