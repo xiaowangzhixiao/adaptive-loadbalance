@@ -93,6 +93,6 @@ public class ServerStatus {
 
     @Override
     public String toString() {
-        return String.format("%d,%d,%d,%d,%d,%d,%d,%d", activeConcurrent,concurrent,maxActiveConcurrent,recentDelay,recentError,recentSuccess,success,totalDelay);
+        return String.format("%d,%d,%d,%d,%d,%d,%d,%d", activeConcurrent,concurrent.get() ,maxActiveConcurrent,recentDelay,recentError,recentSuccess,success,totalDelay);
     }
 }

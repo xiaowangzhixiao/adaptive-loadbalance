@@ -76,9 +76,9 @@ public class UserLoadBalance implements LoadBalance {
                 maxIndex = i;
             }
             if (weight == 0) {
-                // maxIndex = -1;
-                // break;
-                return invokers.get(i);
+                maxIndex = -1;
+                break;
+                // return invokers.get(i);
             }
         }
 
