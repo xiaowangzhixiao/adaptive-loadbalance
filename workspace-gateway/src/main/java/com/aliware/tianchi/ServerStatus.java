@@ -19,8 +19,10 @@ public class ServerStatus {
     private int recentDelay=0;
     private int recentError = 0;
 
+    private long startTime;
+
     public ServerStatus() {
-        
+        startTime = System.currentTimeMillis();
     }
     
     public void reset() {
@@ -39,8 +41,16 @@ public class ServerStatus {
         double recentErrorRate;
         double avgRecentDelay;
 
-        if (concurrent.get() == 0 ) {
+        if (concurrent.get() == 0) {
             return 0;
+        }
+        
+        if (startTime != -1 && System.currentTimeMillis() - startTime > 20000) {
+            startTime = -1;
+        }
+        
+        if (startTime == -1 && concurrent.get() > maxActiveConcurrent*0.95) {
+            return Integer.MIN_VALUE;
         }
 
         if (activeConcurrent == 0) {
@@ -53,8 +63,7 @@ public class ServerStatus {
 
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        
-        return queuingRate * recentErrorRate;
+        return queuingRate * queuingRate * recentErrorRate;
 
     }
 
