@@ -28,7 +28,7 @@ public class ServerStatus {
     }
     
     public void update(ProviderStatus providerStatus) {
-        activeConcurrent = providerStatus.current;
+        activeConcurrent = providerStatus.current.get();
         maxActiveConcurrent = providerStatus.maxCurrent;
     }
 

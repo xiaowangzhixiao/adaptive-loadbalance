@@ -1,5 +1,6 @@
 package com.aliware.tianchi;
 
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ServerStatus
@@ -10,7 +11,7 @@ public class ProviderStatus {
 
     public int maxCurrent;
 
-    public int current = 0;
+    public AtomicInteger current = new AtomicInteger(0);
 
     public String encode() {
         return name + "," + current + "," + maxCurrent;
@@ -18,7 +19,7 @@ public class ProviderStatus {
 
     public ProviderStatus(int name, int current, int maxCurrent) {
         this.name = name;
-        this.current = current;
+        this.current.set(current);
         this.maxCurrent = maxCurrent;
     }
 

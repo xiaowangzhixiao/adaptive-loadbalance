@@ -32,9 +32,9 @@ public class TestServerFilter implements Filter {
             }
 
             if (invocation.getMethodName().equals("hash")) {
-                providerStatus.current++;
-                if (providerStatus.current > providerStatus.maxCurrent) {
-                    providerStatus.maxCurrent = providerStatus.current;
+                providerStatus.current.incrementAndGet();
+                if (providerStatus.current.get() > providerStatus.maxCurrent) {
+                    providerStatus.maxCurrent = providerStatus.current.get();
                 }
             }
 
@@ -50,8 +50,8 @@ public class TestServerFilter implements Filter {
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (invocation.getMethodName().equals("hash")) {
-            if (providerStatus.current > 0) {
-                providerStatus.current--;
+            if (providerStatus.current.get() > 0) {
+                providerStatus.current.decrementAndGet();
             }
         }
         if (providerStatus != null) {
