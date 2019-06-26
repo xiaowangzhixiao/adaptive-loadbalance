@@ -15,10 +15,10 @@ public class ServerStatus {
     public int activeConcurrent = 0;
     public int maxThreads = 0;
     public int maxActiveConcurrent = 0;
-    public int success=0;
-    public int totalDelay=0;
-    public int recentSuccess=0;
-    public int recentDelay=0;
+    public volatile int success=0;
+    public volatile int totalDelay=0;
+    public volatile int recentSuccess=0;
+    public volatile int recentDelay=0;
 
     public ServerStatus() {
     }
@@ -49,7 +49,7 @@ public class ServerStatus {
 
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        return queuingRate * avgRecentDelay * avgRecentDelay;
+        return queuingRate * queuingRate * avgRecentDelay;
 
     }
 

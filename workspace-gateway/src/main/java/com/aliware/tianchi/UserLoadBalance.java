@@ -41,7 +41,7 @@ public class UserLoadBalance implements LoadBalance {
         }, 300, 5000);
     }
 
-    public static Map<Integer, ServerStatus> statusMap = new HashMap<>();
+    public static volatile Map<Integer, ServerStatus> statusMap = new HashMap<>();
 
     private static <T> void init(List<Invoker<T>> invokers) {
         invokers.forEach(x->statusMap.put(x.getUrl().getPort(), new ServerStatus()));
