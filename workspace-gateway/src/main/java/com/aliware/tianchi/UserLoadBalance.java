@@ -6,6 +6,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,9 @@ public class UserLoadBalance implements LoadBalance {
 
             @Override
             public void run() {
+                LocalTime time = LocalTime.now();
                 for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
-                    System.out.println(serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
+                    System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
                     serverStatus.getValue().reset();
                 }
             }
