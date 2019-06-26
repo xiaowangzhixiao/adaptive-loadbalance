@@ -37,7 +37,7 @@ public class ServerStatus {
         double queuingRate;
         double avgRecentDelay;
 
-        if (maxThreads != 0 && concurrent.get() > maxThreads*0.9) {
+        if (maxThreads != 0 && concurrent.get() > maxThreads*0.98) {
             return Integer.MIN_VALUE;
         }
         
@@ -90,14 +90,13 @@ public class ServerStatus {
 
     @Override
     public String toString() {
-        return String.format("%f,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+        return String.format("%f,%d,%d,%d,%d,%d,%d,%d,%d",
                 getWeight(),
                 activeConcurrent, 
                 concurrent.get(), 
                 maxActiveConcurrent, 
                 recentSuccess,
                 recentDelay, 
-                recentError, 
                 success, 
                 totalDelay, 
                 maxThreads);

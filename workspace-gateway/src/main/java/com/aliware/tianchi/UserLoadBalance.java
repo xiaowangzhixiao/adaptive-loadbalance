@@ -36,7 +36,7 @@ public class UserLoadBalance implements LoadBalance {
                     serverStatus.getValue().reset();
                 }
             }
-        }, 300, 5000);
+        }, 300, 1000);
     }
 
     public static Map<Integer, ServerStatus> statusMap = new HashMap<>();

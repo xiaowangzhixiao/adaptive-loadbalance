@@ -19,25 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CallbackServiceImpl implements CallbackService {
 
     public CallbackServiceImpl() {
-        // timer.schedule(new TimerTask() {
-        //     @Override
-        //     public void run() {
-        //         if (!listeners.isEmpty()) {
-        //             for (Map.Entry<String, CallbackListener> entry : listeners.entrySet()) {
-        //                 try {
-        //                     if (TestServerFilter.providerStatus != null) {
-        //                         entry.getValue().receiveServerMsg(TestServerFilter.providerStatus.encode());
-        //                     }
-        //                     // entry.getValue().receiveServerMsg(System.getProperty("quota") + " " + new Date().toString());
-        //                 } catch (Throwable t1) {
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }, 0, 1000);
     }
-
-    // private Timer timer = new Timer();
 
     /**
      * key: listener type

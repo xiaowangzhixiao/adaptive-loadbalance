@@ -57,7 +57,6 @@ public class TestServerFilter implements Filter {
                 result.getAttachments().put(Constants.THREADS_KEY,
                         invoker.getUrl().getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS) + "");
             }
-
                 providerStatus.current.decrementAndGet();
         }
         if (providerStatus != null) {
