@@ -25,11 +25,9 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    private long startTime;
     private Timer timer = new Timer();
 
     public UserLoadBalance() {
-        startTime = System.currentTimeMillis();
         timer.schedule(new TimerTask() {
 
             @Override
@@ -37,10 +35,10 @@ public class UserLoadBalance implements LoadBalance {
                 LocalTime time = LocalTime.now();
                 for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
                     System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
-                    serverStatus.getValue().reset();
+                    // serverStatus.getValue().reset();
                 }
             }
-        }, 300, 1000);
+        }, 300, 100);
     }
 
     public static volatile Map<Integer, ServerStatus> statusMap = new HashMap<>();
@@ -72,44 +70,26 @@ public class UserLoadBalance implements LoadBalance {
 
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int len = invokers.size();
-        if (startTime != -1) {
-            double maxWeight = 0.0;
-            int maxIndex = -1;
-            for (int i = 0; i < len; i++) {
-                double weight = statusMap.get(invokers.get(i).getUrl().getPort()).getWeight();
-                if (weight >= maxWeight) {
-                    maxWeight = weight;
-                    maxIndex = i;
-                }
-                if (weight == 0) {
-                    maxIndex = -1;
-                    break;
-                }
-            }
-            if (System.currentTimeMillis() - startTime > 5000) {
-                startTime = -1;
-            }
-            if (maxIndex == -1) {
-                maxIndex = ThreadLocalRandom.current().nextInt(len);
-            }
+        int[] count = new int[len];
+        ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
+        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get();
 
-            return invokers.get(maxIndex);
-        } else {
-            int[] count = new int[len];
-            ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
-            count[0] = serverStatus.maxThreads - serverStatus.activeConcurrent;
-
-            for (int i = 1; i < len; i++) {
-                serverStatus = statusMap.get(invokers.get(i).getUrl().getPort());
-                count[i] = count[i - 1] + serverStatus.maxThreads - serverStatus.activeConcurrent;;
-            }
-            int counter = ThreadLocalRandom.current().nextInt(count[2]);
-            int index = counter <= count[0] ? 0 : (counter <= count[1] ? 1 : 2);
-            serverStatus = statusMap.get(invokers.get(index).getUrl().getPort());
-            if (serverStatus.concurrent.get() > serverStatus.maxThreads) {
-                index = (index + 1) % len;
-            }
-            return invokers.get(index);
+        for (int i = 1; i < len; i++) {
+            serverStatus = statusMap.get(invokers.get(i).getUrl().getPort());
+            count[i] = count[i - 1] + serverStatus.maxThreads - serverStatus.concurrent.get();
         }
+        int counter = ThreadLocalRandom.current().nextInt(count[len - 1]);
+        int index = len - 1;
+        for (int i = 0; i < len-1; i++) {
+            if (counter <= count[i]) {
+                index = i;
+                break;
+            }
+        }
+        serverStatus = statusMap.get(invokers.get(index).getUrl().getPort());
+        if (serverStatus.concurrent.get() > serverStatus.maxThreads) {
+            index = (index + 1) % len;
+        }
+        return invokers.get(index);
     }
 }
