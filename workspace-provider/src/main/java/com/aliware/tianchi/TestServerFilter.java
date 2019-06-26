@@ -28,16 +28,13 @@ public class TestServerFilter implements Filter {
             if (providerStatus == null) {
                 synchronized (TestServerFilter.class) {
                     if (providerStatus == null && invocation.getMethodName().equals("hash")) {
-                        providerStatus = new ProviderStatus(invoker.getUrl().getPort(), 0, 0);
+                        providerStatus = new ProviderStatus(invoker.getUrl().getPort(), 0);
                     }
                 }
             }
 
             if (invocation.getMethodName().equals("hash")) {
                 providerStatus.current.incrementAndGet();
-                if (providerStatus.current.get() > providerStatus.maxCurrent) {
-                    providerStatus.maxCurrent = providerStatus.current.get();
-                }
             }
 
             

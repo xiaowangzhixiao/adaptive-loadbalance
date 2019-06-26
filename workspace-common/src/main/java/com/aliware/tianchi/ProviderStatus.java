@@ -9,26 +9,24 @@ public class ProviderStatus {
 
     public int name;
 
-    public int maxCurrent;
-
     public AtomicInteger current = new AtomicInteger(0);
 
     public String encode() {
-        return name + "," + current + "," + maxCurrent;
+        return name + "," + current + ",";
     }
 
-    public ProviderStatus(int name, int current, int maxCurrent) {
+    public ProviderStatus(int name, int current) {
         this.name = name;
         this.current.set(current);
-        this.maxCurrent = maxCurrent;
+        
     }
 
     public static ProviderStatus decode(String status) {
         String[] strings = status.split(",");
-        if (strings.length < 3) {
+        if (strings.length < 2) {
             return null;
         } else {
-            return new ProviderStatus(Integer.parseInt(strings[0]), Integer.parseInt(strings[1]), Integer.parseInt(strings[2]));
+            return new ProviderStatus(Integer.parseInt(strings[0]), Integer.parseInt(strings[1]));
         }
     }
 }
