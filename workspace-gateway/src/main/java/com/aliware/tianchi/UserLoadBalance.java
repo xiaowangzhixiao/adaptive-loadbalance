@@ -97,9 +97,16 @@ public class UserLoadBalance implements LoadBalance {
         } else {
             int[] count = new int[len];
             count[0] = statusMap.get(invokers.get(0).getUrl().getPort()).activeConcurrent;
+            if (count[0] == 0) {
+                return invokers.get(ThreadLocalRandom.current().nextInt(len));
+            }
 
             for (int i = 1; i < len; i++) {
-                count[i] = count[i - 1] + statusMap.get(invokers.get(i).getUrl().getPort()).activeConcurrent;
+                int temp = statusMap.get(invokers.get(i).getUrl().getPort()).activeConcurrent;
+                if (temp == 0) {
+                    return invokers.get(ThreadLocalRandom.current().nextInt(len));
+                }
+                count[i] = count[i - 1] + temp;
             }
             int counter = ThreadLocalRandom.current().nextInt(count[2]);
             int index = counter <= count[0] ? 0 : (counter <= count[1] ? 1 : 2);
