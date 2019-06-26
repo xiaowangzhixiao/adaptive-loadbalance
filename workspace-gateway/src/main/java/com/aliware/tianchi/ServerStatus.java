@@ -38,7 +38,7 @@ public class ServerStatus {
         double avgRecentDelay;
 
         if (maxThreads != 0 && concurrent.get() > maxThreads*0.98) {
-            return Integer.MIN_VALUE;
+            return -1;
         }
         
         if (activeConcurrent == 0 || concurrent.get() == 0) {
@@ -49,8 +49,7 @@ public class ServerStatus {
 
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        // return queuingRate * queuingRate * avgRecentDelay ;
-        return queuingRate; 
+        return queuingRate * queuingRate * avgRecentDelay ;
 
     }
 
