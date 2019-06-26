@@ -25,20 +25,22 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
+    private long startTime;
     private Timer timer = new Timer();
 
     public UserLoadBalance() {
+        startTime = System.currentTimeMillis();
         timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
-                // LocalTime time = LocalTime.now();
+                LocalTime time = LocalTime.now();
                 for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
-                    // System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
+                    System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
                     serverStatus.getValue().reset();
                 }
             }
-        }, 300, 5000);
+        }, 300, 1000);
     }
 
     public static volatile Map<Integer, ServerStatus> statusMap = new HashMap<>();
@@ -69,25 +71,43 @@ public class UserLoadBalance implements LoadBalance {
     }
 
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        double maxWeight = 0.0;
-        int maxIndex = -1;
-        for (int i = 0; i < invokers.size(); i++) {
-            double weight = statusMap.get(invokers.get(i).getUrl().getPort()).getWeight();
-            if (weight >= maxWeight) {
-                maxWeight = weight;
-                maxIndex = i;
+        int len = invokers.size();
+        if (startTime != -1) {
+            double maxWeight = 0.0;
+            int maxIndex = -1;
+            for (int i = 0; i < len; i++) {
+                double weight = statusMap.get(invokers.get(i).getUrl().getPort()).getWeight();
+                if (weight >= maxWeight) {
+                    maxWeight = weight;
+                    maxIndex = i;
+                }
+                if (weight == 0) {
+                    maxIndex = -1;
+                    break;
+                }
             }
-            if (weight == 0) {
-                maxIndex = -1;
-                break;
-                // return invokers.get(i);
+            if (System.currentTimeMillis() - startTime > 5000) {
+                startTime = -1;
             }
-        }
+            if (maxIndex == -1) {
+                maxIndex = ThreadLocalRandom.current().nextInt(len);
+            }
 
-        if (maxIndex == -1) {
-            maxIndex = ThreadLocalRandom.current().nextInt(invokers.size());
-        }
+            return invokers.get(maxIndex);
+        } else {
+            int[] count = new int[len];
+            count[0] = statusMap.get(invokers.get(0).getUrl().getPort()).activeConcurrent;
 
-        return invokers.get(maxIndex);
+            for (int i = 1; i < len; i++) {
+                count[i] = count[i - 1] + statusMap.get(invokers.get(i).getUrl().getPort()).activeConcurrent;
+            }
+            int counter = ThreadLocalRandom.current().nextInt(count[2]);
+            int index = counter <= count[0] ? 0 : (counter <= count[1] ? 1 : 2);
+            ServerStatus serverStatus = statusMap.get(invokers.get(index).getUrl().getPort());
+            if (serverStatus.concurrent.get() > serverStatus.maxThreads) {
+                index = (index - 1 + len) % len;
+            }
+            return invokers.get(index);
+        }
     }
 }
