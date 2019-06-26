@@ -34,11 +34,11 @@ public class UserLoadBalance implements LoadBalance {
             public void run() {
                 LocalTime time = LocalTime.now();
                 for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
-                    System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
+                    // System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
                     serverStatus.getValue().reset();
                 }
             }
-        }, 300, 4000);
+        }, 300, 5000);
     }
 
     public static Map<Integer, ServerStatus> statusMap = new HashMap<>();
