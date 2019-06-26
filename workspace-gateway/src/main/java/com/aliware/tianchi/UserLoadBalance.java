@@ -32,7 +32,7 @@ public class UserLoadBalance implements LoadBalance {
 
             @Override
             public void run() {
-                LocalTime time = LocalTime.now();
+                // LocalTime time = LocalTime.now();
                 for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
                     // System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
                     serverStatus.getValue().reset();
