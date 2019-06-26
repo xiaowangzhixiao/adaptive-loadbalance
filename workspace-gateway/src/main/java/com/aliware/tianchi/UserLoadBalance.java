@@ -71,7 +71,7 @@ public class UserLoadBalance implements LoadBalance {
         int maxIndex = -1;
         for (int i = 0; i < invokers.size(); i++) {
             double weight = statusMap.get(invokers.get(i).getUrl().getPort()).getWeight();
-            if (weight > maxWeight) {
+            if (weight >= maxWeight) {
                 maxWeight = weight;
                 maxIndex = i;
             }

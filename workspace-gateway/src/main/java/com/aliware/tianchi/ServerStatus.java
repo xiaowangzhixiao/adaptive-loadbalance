@@ -19,18 +19,13 @@ public class ServerStatus {
     public int totalDelay=0;
     public int recentSuccess=0;
     public int recentDelay=0;
-    public int recentError = 0;
-
-    private long startTime;
 
     public ServerStatus() {
-        startTime = System.currentTimeMillis();
     }
     
     public void reset() {
         recentDelay = 0;
         recentSuccess = 0;
-        recentError = 0;
     }
     
     public void update(ProviderStatus providerStatus) {
@@ -64,9 +59,7 @@ public class ServerStatus {
     }
 
     public void stop(Result result, Invocation invocation) {
-        if (concurrent.get() > 0) {
             concurrent.decrementAndGet();
-        }
 
         String status = result.getAttachment("status");
         if (status != null) {
@@ -82,7 +75,6 @@ public class ServerStatus {
         }
 
         if (result.hasException() || result.getValue() == null || result.getValue().equals("")) {
-            recentError++;
         } else {
             success++;
             recentSuccess++;
