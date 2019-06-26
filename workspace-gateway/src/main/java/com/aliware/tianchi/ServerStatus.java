@@ -49,7 +49,8 @@ public class ServerStatus {
 
         avgRecentDelay = (1 + recentSuccess) / (double) (1 + recentDelay);
         
-        return queuingRate * queuingRate * avgRecentDelay ;
+        // return queuingRate * queuingRate * avgRecentDelay ;
+        return queuingRate; 
 
     }
 
