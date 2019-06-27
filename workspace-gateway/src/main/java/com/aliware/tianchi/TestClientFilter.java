@@ -22,7 +22,9 @@ public class TestClientFilter implements Filter {
         try {
             if (UserLoadBalance.statusMap.size() != 0 && invocation.getMethodName().equals("hash")) {
                 ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().getPort());
-                serverStatus.start(invocation);
+                if (serverStatus != null) {
+                    serverStatus.start(invocation);
+                }
             }
             
             Result result = invoker.invoke(invocation);
@@ -34,9 +36,11 @@ public class TestClientFilter implements Filter {
     
     @Override
     public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (UserLoadBalance.statusMap != null && invocation.getMethodName().equals("hash")) {
+        if (UserLoadBalance.statusMap .size() != 0 && invocation.getMethodName().equals("hash")) {
             ServerStatus serverStatus = UserLoadBalance.statusMap.get(invoker.getUrl().getPort());
-            serverStatus.stop(result, invocation);
+            if (serverStatus != null) {
+                serverStatus.stop(result, invocation);
+            }
         }
         return result;
     }

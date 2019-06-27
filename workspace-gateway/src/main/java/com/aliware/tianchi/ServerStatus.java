@@ -27,10 +27,10 @@ public class ServerStatus {
     }
 
     public void stop(Result result, Invocation invocation) {
-        concurrent.decrementAndGet();
 
         String status = result.getAttachment("status");
         if (status != null) {
+            concurrent.decrementAndGet();
             ProviderStatus providerStatus = ProviderStatus.decode(status);
             if (providerStatus != null) {
                 update(providerStatus);
