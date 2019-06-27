@@ -12,7 +12,7 @@ public class ProviderStatus {
     public AtomicInteger current = new AtomicInteger(0);
 
     public String encode() {
-        return name + "," + current + ",";
+        return name + "," + current;
     }
 
     public ProviderStatus(int name, int current) {
