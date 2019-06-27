@@ -6,13 +6,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import java.time.LocalTime;
+// import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.Map.Entry;
+// import java.util.Timer;
+// import java.util.TimerTask;
+// import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -25,20 +25,20 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class UserLoadBalance implements LoadBalance {
 
-    private Timer timer = new Timer();
+    // private Timer timer = new Timer();
 
     public UserLoadBalance() {
-        timer.schedule(new TimerTask() {
+        // timer.schedule(new TimerTask() {
 
-            @Override
-            public void run() {
-                LocalTime time = LocalTime.now();
-                for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
-                    System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
+        //     @Override
+        //     public void run() {
+        //         LocalTime time = LocalTime.now();
+        //         for (Entry<Integer, ServerStatus> serverStatus : statusMap.entrySet()) {
+        //             System.out.println(time+" "+ serverStatus.getKey().toString() + ":" + serverStatus.getValue().toString());
           
-                }
-            }
-        }, 300, 1000);
+        //         }
+        //     }
+        // }, 300, 1000);
     }
 
     public static volatile Map<Integer, ServerStatus> statusMap = new HashMap<>();
@@ -72,7 +72,10 @@ public class UserLoadBalance implements LoadBalance {
         int len = invokers.size();
         int[] count = new int[len];
         ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
-        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get();
+        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get() * 2 + serverStatus.activeConcurrent;
+        if (count[0] < 0) {
+            count[0] = 0;
+        }
 
         if (serverStatus.maxThreads == 0) {
             return invokers.get(ThreadLocalRandom.current().nextInt(len));
@@ -83,7 +86,10 @@ public class UserLoadBalance implements LoadBalance {
             if (serverStatus.maxThreads == 0) {
                 return invokers.get(ThreadLocalRandom.current().nextInt(len));
             }
-            int tmp = serverStatus.maxThreads - serverStatus.concurrent.get();
+            int tmp = serverStatus.maxThreads - serverStatus.concurrent.get() * 2 + serverStatus.activeConcurrent;
+            if (tmp < 0) {
+                tmp = 0;
+            }
             count[i] = count[i - 1] + tmp;
         }
         if (count[len - 1] == 0) {
