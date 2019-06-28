@@ -72,7 +72,9 @@ public class UserLoadBalance implements LoadBalance {
         int len = invokers.size();
         int[] count = new int[len];
         ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
-        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get() * 2 + serverStatus.activeConcurrent;
+        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get()
+                - (serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 2;
+        
         if (count[0] < 0) {
             count[0] = 0;
         }
@@ -86,7 +88,8 @@ public class UserLoadBalance implements LoadBalance {
             if (serverStatus.maxThreads == 0) {
                 return invokers.get(ThreadLocalRandom.current().nextInt(len));
             }
-            int tmp = serverStatus.maxThreads - serverStatus.concurrent.get() * 2 + serverStatus.activeConcurrent;
+            int tmp = serverStatus.maxThreads - serverStatus.concurrent.get() 
+                    - (serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 2;
             if (tmp < 0) {
                 tmp = 0;
             }
