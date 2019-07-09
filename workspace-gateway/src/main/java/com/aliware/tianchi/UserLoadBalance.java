@@ -70,13 +70,13 @@ public class UserLoadBalance implements LoadBalance {
     
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int len = invokers.size();
-        int maxWeight;
+        double maxWeight;
         boolean same = true;
         int maxIndex = -1;
 
         ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
-        maxWeight = serverStatus.maxThreads - serverStatus.concurrent.get()
-                - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.5);
+        maxWeight = serverStatus.maxThreads*0.95 - serverStatus.concurrent.get()
+                - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.3);
 
         if (maxWeight < 0 || serverStatus.maxThreads == 0) {
             return invokers.get(ThreadLocalRandom.current().nextInt(len)); 
@@ -89,8 +89,8 @@ public class UserLoadBalance implements LoadBalance {
             if (serverStatus.maxThreads == 0) {
                 return invokers.get(ThreadLocalRandom.current().nextInt(len));
             }
-            int tmp = serverStatus.maxThreads - serverStatus.concurrent.get()
-                    - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.5);
+            double tmp = serverStatus.maxThreads*0.95 - serverStatus.concurrent.get()
+                    - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.3);
             if (tmp < 0) {
                 tmp = 0;
             }
