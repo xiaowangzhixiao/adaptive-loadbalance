@@ -57,7 +57,7 @@ public class UserLoadBalance implements LoadBalance {
                 }
             }
         }
-        
+
         if (invokers == null || invokers.isEmpty()) {
             return null;
         }
@@ -67,21 +67,21 @@ public class UserLoadBalance implements LoadBalance {
 
         return doSelect(invokers, url, invocation);
     }
-
+    
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int len = invokers.size();
-        int[] count = new int[len];
-        
-        ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
-        count[0] = serverStatus.maxThreads - serverStatus.concurrent.get()
-                - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.6);
-        
-        if (count[0] < 0) {
-            count[0] = 0;
-        }
+        int maxWeight;
+        boolean same = true;
+        int maxIndex = -1;
 
-        if (serverStatus.maxThreads == 0) {
-            return invokers.get(ThreadLocalRandom.current().nextInt(len));
+        ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
+        maxWeight = serverStatus.maxThreads - serverStatus.concurrent.get()
+                - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.3);
+
+        if (maxWeight < 0 || serverStatus.maxThreads == 0) {
+            return invokers.get(ThreadLocalRandom.current().nextInt(len)); 
+        } else {
+            maxIndex = 0;
         }
 
         for (int i = 1; i < len; i++) {
@@ -90,27 +90,68 @@ public class UserLoadBalance implements LoadBalance {
                 return invokers.get(ThreadLocalRandom.current().nextInt(len));
             }
             int tmp = serverStatus.maxThreads - serverStatus.concurrent.get()
-                    - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.6);
+                    - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.3);
             if (tmp < 0) {
                 tmp = 0;
             }
-            count[i] = count[i - 1] + tmp;
-        }
-        if (count[len - 1] == 0) {
-            return invokers.get(ThreadLocalRandom.current().nextInt(len));
-        }
-        int counter = ThreadLocalRandom.current().nextInt(count[len - 1]);
-        int index = len - 1;
-        for (int i = 0; i < len-1; i++) {
-            if (counter <= count[i]) {
-                index = i;
-                break;
+            if (tmp > maxWeight) {
+                same = false;
+                maxWeight = tmp;
+                maxIndex = i;
+            } else if(tmp < maxIndex) {
+                same = false;
             }
         }
-        serverStatus = statusMap.get(invokers.get(index).getUrl().getPort());
-        if (serverStatus.concurrent.get() > serverStatus.maxThreads) {
-            index = (index + 1) % len;
+        if (same) {
+            return invokers.get(ThreadLocalRandom.current().nextInt(len));
         }
-        return invokers.get(index);
+    
+        return invokers.get(maxIndex);
     }
+
+    // protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+    //     int len = invokers.size();
+    //     int[] count = new int[len];
+        
+    //     ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
+    //     count[0] = serverStatus.maxThreads - serverStatus.concurrent.get()
+    //             - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.6);
+        
+    //     if (count[0] < 0) {
+    //         count[0] = 0;
+    //     }
+
+    //     if (serverStatus.maxThreads == 0) {
+    //         return invokers.get(ThreadLocalRandom.current().nextInt(len));
+    //     }
+
+    //     for (int i = 1; i < len; i++) {
+    //         serverStatus = statusMap.get(invokers.get(i).getUrl().getPort());
+    //         if (serverStatus.maxThreads == 0) {
+    //             return invokers.get(ThreadLocalRandom.current().nextInt(len));
+    //         }
+    //         int tmp = serverStatus.maxThreads - serverStatus.concurrent.get()
+    //                 - (int) ((serverStatus.concurrent.get() - serverStatus.activeConcurrent) * 0.6);
+    //         if (tmp < 0) {
+    //             tmp = 0;
+    //         }
+    //         count[i] = count[i - 1] + tmp;
+    //     }
+    //     if (count[len - 1] == 0) {
+    //         return invokers.get(ThreadLocalRandom.current().nextInt(len));
+    //     }
+    //     int counter = ThreadLocalRandom.current().nextInt(count[len - 1]);
+    //     int index = len - 1;
+    //     for (int i = 0; i < len-1; i++) {
+    //         if (counter <= count[i]) {
+    //             index = i;
+    //             break;
+    //         }
+    //     }
+    //     serverStatus = statusMap.get(invokers.get(index).getUrl().getPort());
+    //     if (serverStatus.concurrent.get() > serverStatus.maxThreads) {
+    //         index = (index + 1) % len;
+    //     }
+    //     return invokers.get(index);
+    // }
 }
