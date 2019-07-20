@@ -12,6 +12,7 @@ import org.apache.dubbo.rpc.Result;
 public class ServerStatus {
 
     public AtomicInteger concurrent = new AtomicInteger(0);
+    public int lastPanding = 0;
     public int activeConcurrent = 0;
     public int maxThreads = 0;
 
@@ -19,6 +20,7 @@ public class ServerStatus {
     }
     
     public void update(ProviderStatus providerStatus) {
+        lastPanding = concurrent.get() - activeConcurrent;
         activeConcurrent = providerStatus.current.get();
     }
 
