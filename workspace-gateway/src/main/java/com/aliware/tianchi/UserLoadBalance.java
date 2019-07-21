@@ -77,7 +77,7 @@ public class UserLoadBalance implements LoadBalance {
         ServerStatus serverStatus = statusMap.get(invokers.get(0).getUrl().getPort());
         int pending = serverStatus.concurrent.get() - serverStatus.activeConcurrent;
         maxWeight = serverStatus.maxThreads*0.98 - serverStatus.activeConcurrent - pending
-                - (pending - serverStatus.lastPending) * 3;
+                - (pending - serverStatus.lastPending) * 1;
 
         if (maxWeight < 0 || serverStatus.maxThreads == 0) {
             return invokers.get(ThreadLocalRandom.current().nextInt(len)); 
@@ -92,7 +92,7 @@ public class UserLoadBalance implements LoadBalance {
             }
             pending = serverStatus.concurrent.get() - serverStatus.activeConcurrent;
             double tmp = serverStatus.maxThreads*0.98 - serverStatus.activeConcurrent - pending
-                    - (pending - serverStatus.lastPending) * 3;
+                    - (pending - serverStatus.lastPending) * 1;
             if (tmp < 0) {
                 tmp = 0;
             }
